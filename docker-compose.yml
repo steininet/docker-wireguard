@@ -2,6 +2,8 @@ version: "3"
 
 services:
   server:
+    container_name: wireguard
+    restart: 'unless-stopped'
     image: wireguard
     build:
       context: .
@@ -10,7 +12,11 @@ services:
     volumes:
       - ./config:/etc/wireguard
       - /lib/modules:/lib/modules
-    network_mode: host
+#    network_mode: host #exposes all host ports to container
+#    expose:
+#     - 51820 #for linked container network_mode: 'service:<containername>
+    ports:
+      - 51820:51820/udp #docker default is tcp only
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
