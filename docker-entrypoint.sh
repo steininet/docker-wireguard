@@ -11,20 +11,25 @@ if [ "$1" = "run-server" ]; then
     dkms install wireguard/$MODULE_VERSION
     modprobe wireguard
     
-    config=$(ls /etc/wireguard/*.conf | head -1)
-    if ip a | grep -q $(basename $config | cut -f 1 -d '.'); then
+    configs=/etc/wireguard/*.conf
+    for config in $configs
+    do
+     if ip a | grep -q $(basename $config | cut -f 1 -d '.'); then
         echo "Stopping existing interface"
         wg-quick down $config
-    fi
-
-    echo "Starting wireguard using $config"
-    wg-quick up $config
+     fi
+     echo "Starting wireguard using $config"
+     wg-quick up $config
+    done
     echo "Running config:"
     wg
 
     shutdown() {
         echo "Stopping wireguard"
-        wg-quick down $config
+        for config in $configs
+        do
+         wg-quick down $config
+        done
         rmmod wireguard
         echo "Uninstalling dkms module"
         dkms uninstall wireguard/$MODULE_VERSION
